@@ -1,46 +1,283 @@
-(()=>{
-  const search=document.getElementById('manual-search');
-  const results=document.getElementById('manual-results');
-  const totalElement=document.getElementById('manual-total');
-  const intakeCard=document.querySelector('#intake-view .intake-card');
-  if(!search||!results||!totalElement||!intakeCard)return;
+(() => {
+  const search = document.getElementById("manual-search");
+  const results = document.getElementById("manual-results");
+  const totalElement = document.getElementById("manual-total");
+  const intakeCard = document.querySelector("#intake-view .intake-card");
+  if (!search || !results || !totalElement || !intakeCard) return;
 
-  const style=document.createElement('style');
-  style.textContent='.catalogue-tables{margin-top:25px}.table-accordion{border:1px solid #dce3e8;border-radius:7px;margin-top:9px;overflow:hidden}.table-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:#f7f9fb;padding:13px 15px;font-weight:750;cursor:pointer}.table-toggle:hover{background:#edf3f8}.table-panel{display:none;border-top:1px solid #dce3e8}.table-panel.open{display:block}.table-scroll{max-height:430px;overflow-y:auto;overflow-x:auto}.catalogue-grid{width:100%;border-collapse:collapse;min-width:620px}.catalogue-grid th{position:sticky;top:0;background:#edf3f8;text-align:left;padding:9px;z-index:1}.catalogue-grid td{padding:9px;border-top:1px solid #e6ebef;vertical-align:top}.catalogue-grid tr:hover td{background:#fafcff}.add-food{border:1px solid #2776db;background:#fff;color:#2776db;border-radius:4px;padding:5px 8px;cursor:pointer}.load-more{display:block;margin:12px auto;padding:8px 13px}.catalogue-error{color:#b23b46}.search-meta{font-size:11px;color:#728091;margin:8px 0}.food-result small{color:#728091}';
+  const style = document.createElement("style");
+  style.textContent =
+    ".catalogue-tables{margin-top:25px}.table-accordion{border:1px solid #dce3e8;border-radius:7px;margin-top:9px;overflow:hidden}.table-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:#f7f9fb;padding:13px 15px;font-weight:750;cursor:pointer}.table-toggle:hover{background:#edf3f8}.table-panel{display:none;border-top:1px solid #dce3e8}.table-panel.open{display:block}.table-scroll{max-height:430px;overflow-y:auto;overflow-x:auto}.catalogue-grid{width:100%;border-collapse:collapse;min-width:620px}.catalogue-grid th{position:sticky;top:0;background:#edf3f8;text-align:left;padding:9px;z-index:1}.catalogue-grid td{padding:9px;border-top:1px solid #e6ebef;vertical-align:top}.catalogue-grid tr:hover td{background:#fafcff}.add-food{border:1px solid #2776db;background:#fff;color:#2776db;border-radius:4px;padding:5px 8px;cursor:pointer}.load-more{display:block;margin:12px auto;padding:8px 13px}.catalogue-error{color:#b23b46}.search-meta{font-size:11px;color:#728091;margin:8px 0}.food-result small{color:#728091}";
   document.head.appendChild(style);
 
-  let selectedKcal=Number(totalElement.textContent)||0;
-  let timer,pendingItem,pendingButton,pendingMeasure;
-  const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-  const kcalValue=item=>Number(item.Energ_Kcal);
-  const portionDialog=document.createElement('dialog');
-  portionDialog.style.cssText='width:min(430px,calc(100% - 32px));border:0;border-radius:10px;padding:0;box-shadow:0 18px 60px #17233155';
-  portionDialog.innerHTML='<div style="padding:24px"><div class="eyebrow">PORCIÓN</div><h2 style="margin:7px 0 5px">Añadir alimento</h2><p id="portion-food" style="font-weight:700"></p><p id="portion-reference" class="hint"></p><label style="display:block;margin-top:18px"><span id="portion-unit-label" style="display:block;margin-bottom:7px">Cantidad</span><input id="portion-cups" type="number" min="0.1" step="0.1" value="1" style="width:100%;padding:11px;border:1px solid #dce3e8;border-radius:5px"></label><div id="portion-calculation" style="background:#e7f0ff;color:#1d64bc;border-radius:7px;padding:12px;margin-top:16px;font-weight:750"></div><p id="portion-error" style="color:#b23b46;display:none">Introduce una cantidad mayor que cero.</p><div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px"><button id="portion-cancel" type="button" class="ghost">Cancelar</button><button id="portion-confirm" type="button" class="primary">Añadir al total</button></div></div>';
+  let selectedKcal = Number(totalElement.textContent) || 0;
+  let timer, pendingItem, pendingButton, pendingMeasure;
+  const escapeHtml = (value) =>
+    String(value ?? "").replace(
+      /[&<>'"]/g,
+      (char) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        })[char],
+    );
+  const kcalValue = (item) => Number(item.Energ_Kcal);
+  const portionDialog = document.createElement("dialog");
+  portionDialog.style.cssText =
+    "width:min(430px,calc(100% - 32px));border:0;border-radius:10px;padding:0;box-shadow:0 18px 60px #17233155";
+  portionDialog.innerHTML =
+    '<div style="padding:24px"><div class="eyebrow">PORCIÓN</div><h2 style="margin:7px 0 5px">Añadir alimento</h2><p id="portion-food" style="font-weight:700"></p><p id="portion-reference" class="hint"></p><label style="display:block;margin-top:18px"><span id="portion-unit-label" style="display:block;margin-bottom:7px">Cantidad</span><input id="portion-cups" type="number" min="0.1" step="0.1" value="1" style="width:100%;padding:11px;border:1px solid #dce3e8;border-radius:5px"></label><div id="portion-calculation" style="background:#e7f0ff;color:#1d64bc;border-radius:7px;padding:12px;margin-top:16px;font-weight:750"></div><p id="portion-error" style="color:#b23b46;display:none">Introduce una cantidad mayor que cero.</p><div style="display:flex;justify-content:flex-end;gap:9px;margin-top:20px"><button id="portion-cancel" type="button" class="ghost">Cancelar</button><button id="portion-confirm" type="button" class="primary">Añadir al total</button></div></div>';
   document.body.appendChild(portionDialog);
-  const portionFood=portionDialog.querySelector('#portion-food'),portionReference=portionDialog.querySelector('#portion-reference'),portionCups=portionDialog.querySelector('#portion-cups'),portionCalculation=portionDialog.querySelector('#portion-calculation'),portionError=portionDialog.querySelector('#portion-error'),portionUnitLabel=portionDialog.querySelector('#portion-unit-label');
-  function formatKcal(value){return Number.isInteger(value)?String(value):value.toFixed(1)}
-  function parseNumber(value){if(!value)return NaN;if(value.includes('/')){const parts=value.split('/').map(Number);return parts[1]?parts[0]/parts[1]:NaN}return Number(value)}
-  function parseMeasure(description){const raw=String(description||'1 serving').trim(),match=raw.match(/^(\d+\s*\/\s*\d+|\d+(?:\.\d+)?)\s*(.*)$/),referenceQuantity=match?parseNumber(match[1].replace(/\s/g,'')):1,remainder=(match?match[2]:raw).toLowerCase();const measures=[[/^(cup|cups)\b/,'taza','tazas','cup'],[/^(piece|pieces)\b/,'pieza','piezas','piece'],[/^(serving|servings)\b/,'porción','porciones','serving'],[/^(tbsp|tablespoon|tablespoons)\b/,'cucharada','cucharadas','tbsp'],[/^(tsp|teaspoon|teaspoons)\b/,'cucharadita','cucharaditas','tsp'],[/^(slice|slices)\b/,'rebanada','rebanadas','slice'],[/^(oz|ounce|ounces)\b/,'onza','onzas','oz'],[/^(package|packages|packet|packets)\b/,'paquete','paquetes','package'],[/^(bottle|bottles)\b/,'botella','botellas','bottle'],[/^(can|cans)\b/,'lata','latas','can'],[/^(item|items|unit|units)\b/,'unidad','unidades','unit']];const found=measures.find(([pattern])=>pattern.test(remainder));return{raw,referenceQuantity:Number.isFinite(referenceQuantity)&&referenceQuantity>0?referenceQuantity:1,singular:found?.[1]||'porción',plural:found?.[2]||'porciones',key:found?.[3]||'serving'}}
-  function unitName(quantity){return quantity===1?pendingMeasure.singular:pendingMeasure.plural}
-  function updatePortionCalculation(){const quantity=Number(portionCups.value),kcal=pendingItem?kcalValue(pendingItem):0,totalKcal=kcal/pendingMeasure.referenceQuantity*quantity;if(!Number.isFinite(totalKcal)||quantity<=0){portionCalculation.textContent='—';return}const entered=`${quantity} ${unitName(quantity)}`;portionCalculation.textContent=pendingMeasure.referenceQuantity===1?`${formatKcal(kcal)} kcal × ${entered} = ${formatKcal(totalKcal)} kcal`:`${formatKcal(kcal)} kcal ÷ ${pendingMeasure.referenceQuantity} ${unitName(pendingMeasure.referenceQuantity)} × ${entered} = ${formatKcal(totalKcal)} kcal`}
-  function addItem(item,button){const kcal=kcalValue(item);if(!Number.isFinite(kcal))return;pendingItem=item;pendingButton=button;pendingMeasure=parseMeasure(item.GmWt_Desc1);portionFood.textContent=item.Shrt_Desc;portionReference.textContent=`Referencia del catálogo: ${pendingMeasure.raw} · ${formatKcal(kcal)} kcal`;portionUnitLabel.textContent=`Número de ${pendingMeasure.plural}`;portionCups.min=pendingMeasure.key==='piece'?'1':'0.1';portionCups.step=pendingMeasure.key==='piece'?'1':'0.1';portionCups.value=String(pendingMeasure.referenceQuantity);portionError.style.display='none';updatePortionCalculation();portionDialog.showModal()}
-  portionCups.oninput=updatePortionCalculation;
-  portionDialog.querySelector('#portion-cancel').onclick=()=>portionDialog.close();
-  portionDialog.querySelector('#portion-confirm').onclick=()=>{const quantity=Number(portionCups.value),kcal=pendingItem?kcalValue(pendingItem):NaN;if(!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(kcal)){portionError.style.display='block';return}const added=kcal/pendingMeasure.referenceQuantity*quantity;selectedKcal=Number(totalElement.textContent)||0;selectedKcal+=added;totalElement.textContent=formatKcal(selectedKcal);if(pendingButton)pendingButton.textContent=`Añadir otra · ${formatKcal(added)} kcal`;document.dispatchEvent(new CustomEvent('pesate:food-added',{detail:{date:document.getElementById('food-entry-date')?.value||new Date().toISOString().slice(0,10),name:pendingItem.Shrt_Desc,quantity,unit:unitName(quantity),referenceQuantity:pendingMeasure.referenceQuantity,referenceMeasure:pendingMeasure.raw,referenceKcal:kcal,totalKcal:added,measure:pendingItem.GmWt_Desc1||'1 serving',cups:`${quantity} ${unitName(quantity)}`}}));portionDialog.close()};
-  function itemRow(item){return `<tr><td>${escapeHtml(item.Shrt_Desc)}</td><td>${escapeHtml(item.Energ_Kcal)}</td><td>${escapeHtml(item.GmWt_Desc1||'—')}</td><td><button class="add-food">Añadir</button></td></tr>`}
-  function bindAddButtons(container,items){container.querySelectorAll('.add-food').forEach((button,index)=>button.onclick=()=>addItem(items[index],button))}
+  const portionFood = portionDialog.querySelector("#portion-food"),
+    portionReference = portionDialog.querySelector("#portion-reference"),
+    portionCups = portionDialog.querySelector("#portion-cups"),
+    portionCalculation = portionDialog.querySelector("#portion-calculation"),
+    portionError = portionDialog.querySelector("#portion-error"),
+    portionUnitLabel = portionDialog.querySelector("#portion-unit-label");
 
-  function renderSearch(items,variants){if(!items.length){results.innerHTML='<p class="hint">No se encontraron alimentos. Prueba otro término en español o inglés.</p>';return}results.innerHTML=`<p class="search-meta">${items.length} resultados · términos usados: ${escapeHtml(variants.join(', '))}</p><div class="table-scroll"><table class="catalogue-grid"><thead><tr><th>Shrt_Desc</th><th>Energ_Kcal</th><th>GmWt_Desc1</th><th></th></tr></thead><tbody>${items.map(itemRow).join('')}</tbody></table></div>`;bindAddButtons(results,items)}
-  search.oninput=()=>{clearTimeout(timer);const query=search.value.trim();if(query.length<2){results.innerHTML='<p class="hint">Escribe al menos dos letras para buscar en nutrition.sqlite.</p>';return}timer=setTimeout(async()=>{results.innerHTML='<p class="hint">Buscando…</p>';try{const response=await fetch('/api/catalogue/search?q='+encodeURIComponent(query));const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Error de búsqueda');renderSearch(payload.items||[],payload.variants||[query])}catch(error){results.innerHTML=`<p class="catalogue-error">${escapeHtml(error.message)}</p>`}},250)};
+  function formatKcal(value) {
+    return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  }
 
-  const browser=document.createElement('section');
-  browser.className='catalogue-tables';
-  browser.innerHTML='<hr><div class="eyebrow">TABLAS DEL CATÁLOGO</div><h2>Explorar por tabla</h2><p class="hint">Selecciona una tabla para mostrar sus alimentos. Las listas tienen desplazamiento vertical.</p><div id="catalogue-table-list"><p class="hint">Cargando tablas…</p></div>';
+  function parseNumber(value) {
+    if (!value) return NaN;
+    if (value.includes("/")) {
+      const parts = value.split("/").map(Number);
+      return parts[1] ? parts[0] / parts[1] : NaN;
+    }
+    return Number(value);
+  }
+
+  function parseMeasure(description) {
+    const raw = String(description || "1 serving").trim(),
+      match = raw.match(/^(\d+\s*\/\s*\d+|\d+(?:\.\d+)?)\s*(.*)$/),
+      referenceQuantity = match ? parseNumber(match[1].replace(/\s/g, "")) : 1,
+      remainder = (match ? match[2] : raw).toLowerCase();
+    const measures = [
+      [/^(cup|cups)\b/, "taza", "tazas", "cup"],
+      [/^(piece|pieces)\b/, "pieza", "piezas", "piece"],
+      [/^(serving|servings)\b/, "porción", "porciones", "serving"],
+      [/^(tbsp|tablespoon|tablespoons)\b/, "cucharada", "cucharadas", "tbsp"],
+      [/^(tsp|teaspoon|teaspoons)\b/, "cucharadita", "cucharaditas", "tsp"],
+      [/^(slice|slices)\b/, "rebanada", "rebanadas", "slice"],
+      [/^(oz|ounce|ounces)\b/, "onza", "onzas", "oz"],
+      [
+        /^(package|packages|packet|packets)\b/,
+        "paquete",
+        "paquetes",
+        "package",
+      ],
+      [/^(bottle|bottles)\b/, "botella", "botellas", "bottle"],
+      [/^(can|cans)\b/, "lata", "latas", "can"],
+      [/^(item|items|unit|units)\b/, "unidad", "unidades", "unit"],
+    ];
+    const found = measures.find(([pattern]) => pattern.test(remainder));
+    return {
+      raw,
+      referenceQuantity:
+        Number.isFinite(referenceQuantity) && referenceQuantity > 0
+          ? referenceQuantity
+          : 1,
+      singular: found?.[1] || "porción",
+      plural: found?.[2] || "porciones",
+      key: found?.[3] || "serving",
+    };
+  }
+
+  function unitName(quantity) {
+    return quantity === 1 ? pendingMeasure.singular : pendingMeasure.plural;
+  }
+
+  function updatePortionCalculation() {
+    const quantity = Number(portionCups.value),
+      kcal = pendingItem ? kcalValue(pendingItem) : 0,
+      totalKcal = (kcal / pendingMeasure.referenceQuantity) * quantity;
+    if (!Number.isFinite(totalKcal) || quantity <= 0) {
+      portionCalculation.textContent = "—";
+      return;
+    }
+    const entered = `${quantity} ${unitName(quantity)}`;
+    portionCalculation.textContent =
+      pendingMeasure.referenceQuantity === 1
+        ? `${formatKcal(kcal)} kcal × ${entered} = ${formatKcal(totalKcal)} kcal`
+        : `${formatKcal(kcal)} kcal ÷ ${pendingMeasure.referenceQuantity} ${unitName(pendingMeasure.referenceQuantity)} × ${entered} = ${formatKcal(totalKcal)} kcal`;
+  }
+
+  function addItem(item, button) {
+    const kcal = kcalValue(item);
+    if (!Number.isFinite(kcal)) return;
+    pendingItem = item;
+    pendingButton = button;
+    pendingMeasure = parseMeasure(item.GmWt_Desc1);
+    portionFood.textContent = item.Shrt_Desc;
+    portionReference.textContent = `Referencia del catálogo: ${pendingMeasure.raw} · ${formatKcal(kcal)} kcal`;
+    portionUnitLabel.textContent = `Número de ${pendingMeasure.plural}`;
+    portionCups.min = pendingMeasure.key === "piece" ? "1" : "0.1";
+    portionCups.step = pendingMeasure.key === "piece" ? "1" : "0.1";
+    portionCups.value = String(pendingMeasure.referenceQuantity);
+    portionError.style.display = "none";
+    updatePortionCalculation();
+    portionDialog.showModal();
+  }
+  portionCups.oninput = updatePortionCalculation;
+  portionDialog.querySelector("#portion-cancel").onclick = () =>
+    portionDialog.close();
+  portionDialog.querySelector("#portion-confirm").onclick = () => {
+    const quantity = Number(portionCups.value),
+      kcal = pendingItem ? kcalValue(pendingItem) : NaN;
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(kcal)) {
+      portionError.style.display = "block";
+      return;
+    }
+    const added = (kcal / pendingMeasure.referenceQuantity) * quantity;
+    selectedKcal = Number(totalElement.textContent) || 0;
+    selectedKcal += added;
+    totalElement.textContent = formatKcal(selectedKcal);
+    if (pendingButton)
+      pendingButton.textContent = `Añadir otra · ${formatKcal(added)} kcal`;
+    document.dispatchEvent(
+      new CustomEvent("pesate:food-added", {
+        detail: {
+          date:
+            document.getElementById("food-entry-date")?.value ||
+            new Date().toISOString().slice(0, 10),
+          name: pendingItem.Shrt_Desc,
+          quantity,
+          unit: unitName(quantity),
+          referenceQuantity: pendingMeasure.referenceQuantity,
+          referenceMeasure: pendingMeasure.raw,
+          referenceKcal: kcal,
+          totalKcal: added,
+          measure: pendingItem.GmWt_Desc1 || "1 serving",
+          cups: `${quantity} ${unitName(quantity)}`,
+        },
+      }),
+    );
+    portionDialog.close();
+  };
+
+  function itemRow(item) {
+    return `<tr><td>${escapeHtml(item.Shrt_Desc)}</td><td>${escapeHtml(item.Energ_Kcal)}</td><td>${escapeHtml(item.GmWt_Desc1 || "—")}</td><td><button class="add-food">Añadir</button></td></tr>`;
+  }
+
+  function bindAddButtons(container, items) {
+    container
+      .querySelectorAll(".add-food")
+      .forEach(
+        (button, index) =>
+          (button.onclick = () => addItem(items[index], button)),
+      );
+  }
+
+  function renderSearch(items, variants) {
+    if (!items.length) {
+      results.innerHTML =
+        '<p class="hint">No se encontraron alimentos. Prueba otro término en español o inglés.</p>';
+      return;
+    }
+    results.innerHTML = `<p class="search-meta">${items.length} resultados · términos usados: ${escapeHtml(variants.join(", "))}</p><div class="table-scroll"><table class="catalogue-grid"><thead><tr><th>Shrt_Desc</th><th>Energ_Kcal</th><th>GmWt_Desc1</th><th></th></tr></thead><tbody>${items.map(itemRow).join("")}</tbody></table></div>`;
+    bindAddButtons(results, items);
+  }
+
+  search.oninput = () => {
+    clearTimeout(timer);
+    const query = search.value.trim();
+    if (query.length < 2) {
+      results.innerHTML =
+        '<p class="hint">Escribe al menos dos letras para buscar en nutrition.sqlite.</p>';
+      return;
+    }
+    timer = setTimeout(async () => {
+      results.innerHTML = '<p class="hint">Buscando…</p>';
+      try {
+        const response = await fetch(
+          "/api/catalogue/search?q=" + encodeURIComponent(query),
+        );
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Error de búsqueda");
+        renderSearch(payload.items || [], payload.variants || [query]);
+      } catch (error) {
+        results.innerHTML = `<p class="catalogue-error">${escapeHtml(error.message)}</p>`;
+      }
+    }, 250);
+  };
+
+  const browser = document.createElement("section");
+  browser.className = "catalogue-tables";
+  browser.innerHTML =
+    '<hr><div class="eyebrow">TABLAS DEL CATÁLOGO</div><h2>Explorar por tabla</h2><p class="hint">Selecciona una tabla para mostrar sus alimentos. Las listas tienen desplazamiento vertical.</p><div id="catalogue-table-list"><p class="hint">Cargando tablas…</p></div>';
   intakeCard.appendChild(browser);
-  const tableList=browser.querySelector('#catalogue-table-list');
+  const tableList = browser.querySelector("#catalogue-table-list");
 
-  async function loadTable(table,panel,offset=0){const body=panel.querySelector('tbody'),status=panel.querySelector('.table-status'),more=panel.querySelector('.load-more');status.textContent='Cargando alimentos…';try{const response=await fetch(`/api/catalogue/items?table=${encodeURIComponent(table)}&offset=${offset}&limit=250`);const payload=await response.json();if(!response.ok)throw new Error(payload.error||'No se pudo abrir la tabla');const items=payload.items||[];if(offset===0)body.innerHTML='';body.insertAdjacentHTML('beforeend',items.map(itemRow).join(''));const buttons=[...body.querySelectorAll('.add-food')].slice(-items.length);buttons.forEach((button,index)=>button.onclick=()=>addItem(items[index],button));const loaded=offset+items.length;status.textContent=`Mostrando ${loaded} de ${payload.total} alimentos`;more.hidden=loaded>=payload.total;more.dataset.offset=String(loaded)}catch(error){status.textContent=error.message;status.className='table-status catalogue-error'}}
+  async function loadTable(table, panel, offset = 0) {
+    const body = panel.querySelector("tbody"),
+      status = panel.querySelector(".table-status"),
+      more = panel.querySelector(".load-more");
+    status.textContent = "Cargando alimentos…";
+    try {
+      const response = await fetch(
+        `/api/catalogue/items?table=${encodeURIComponent(table)}&offset=${offset}&limit=250`,
+      );
+      const payload = await response.json();
+      if (!response.ok)
+        throw new Error(payload.error || "No se pudo abrir la tabla");
+      const items = payload.items || [];
+      if (offset === 0) body.innerHTML = "";
+      body.insertAdjacentHTML("beforeend", items.map(itemRow).join(""));
+      const buttons = [...body.querySelectorAll(".add-food")].slice(
+        -items.length,
+      );
+      buttons.forEach(
+        (button, index) =>
+          (button.onclick = () => addItem(items[index], button)),
+      );
+      const loaded = offset + items.length;
+      status.textContent = `Mostrando ${loaded} de ${payload.total} alimentos`;
+      more.hidden = loaded >= payload.total;
+      more.dataset.offset = String(loaded);
+    } catch (error) {
+      status.textContent = error.message;
+      status.className = "table-status catalogue-error";
+    }
+  }
 
-  async function loadTables(){try{const response=await fetch('/api/catalogue/tables');const payload=await response.json();if(!response.ok)throw new Error(payload.error||'No se pudieron cargar las tablas');if(!payload.tables.length){tableList.innerHTML='<p class="catalogue-error">No se encontraron las tablas food1, food2, food3 y food4.</p>';return}tableList.innerHTML='';payload.tables.forEach(info=>{const accordion=document.createElement('div');accordion.className='table-accordion';accordion.innerHTML=`<button class="table-toggle"><span>${escapeHtml(info.name)}</span><small>${info.count} alimentos　⌄</small></button><div class="table-panel"><div class="table-scroll"><table class="catalogue-grid"><thead><tr><th>Shrt_Desc</th><th>Energ_Kcal</th><th>GmWt_Desc1</th><th></th></tr></thead><tbody></tbody></table></div><p class="table-status hint" style="padding:0 12px"></p><button class="load-more" hidden>Mostrar más</button></div>`;tableList.appendChild(accordion);const toggle=accordion.querySelector('.table-toggle'),panel=accordion.querySelector('.table-panel'),more=accordion.querySelector('.load-more');toggle.onclick=()=>{const opening=!panel.classList.contains('open');panel.classList.toggle('open',opening);if(opening&&!panel.dataset.loaded){panel.dataset.loaded='true';loadTable(info.name,panel)}};more.onclick=()=>loadTable(info.name,panel,Number(more.dataset.offset)||0)})}catch(error){tableList.innerHTML=`<p class="catalogue-error">${escapeHtml(error.message)}</p>`}}
+  async function loadTables() {
+    try {
+      const response = await fetch("/api/catalogue/tables");
+      const payload = await response.json();
+      if (!response.ok)
+        throw new Error(payload.error || "No se pudieron cargar las tablas");
+      if (!payload.tables.length) {
+        tableList.innerHTML =
+          '<p class="catalogue-error">No se encontraron las tablas food1, food2, food3 y food4.</p>';
+        return;
+      }
+      tableList.innerHTML = "";
+      payload.tables.forEach((info) => {
+        const accordion = document.createElement("div");
+        accordion.className = "table-accordion";
+        accordion.innerHTML = `<button class="table-toggle"><span>${escapeHtml(info.name)}</span><small>${info.count} alimentos　⌄</small></button><div class="table-panel"><div class="table-scroll"><table class="catalogue-grid"><thead><tr><th>Shrt_Desc</th><th>Energ_Kcal</th><th>GmWt_Desc1</th><th></th></tr></thead><tbody></tbody></table></div><p class="table-status hint" style="padding:0 12px"></p><button class="load-more" hidden>Mostrar más</button></div>`;
+        tableList.appendChild(accordion);
+        const toggle = accordion.querySelector(".table-toggle"),
+          panel = accordion.querySelector(".table-panel"),
+          more = accordion.querySelector(".load-more");
+        toggle.onclick = () => {
+          const opening = !panel.classList.contains("open");
+          panel.classList.toggle("open", opening);
+          if (opening && !panel.dataset.loaded) {
+            panel.dataset.loaded = "true";
+            loadTable(info.name, panel);
+          }
+        };
+        more.onclick = () =>
+          loadTable(info.name, panel, Number(more.dataset.offset) || 0);
+      });
+    } catch (error) {
+      tableList.innerHTML = `<p class="catalogue-error">${escapeHtml(error.message)}</p>`;
+    }
+  }
   loadTables();
 })();

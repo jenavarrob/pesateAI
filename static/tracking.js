@@ -114,10 +114,12 @@
   function validDateForRange(value) {
     return value >= timeline.start && value <= timeline.end;
   }
+
   function preferredEntryDate() {
     const current = localDate(new Date());
     return validDateForRange(current) ? current : timeline.start;
   }
+
   function applyRange() {
     let days = dayDiff(startInput.value, endInput.value);
     timelineMessage.className = "hint";
@@ -179,6 +181,7 @@
         }),
     );
   }
+
   document.getElementById("add-measurement").onclick = () => {
     const date = measurementDate.value,
       kg = Number(measurementWeight.value);
@@ -202,6 +205,7 @@
     context.clearRect(0, 0, width, height);
     return { context, width, height };
   }
+
   function drawTimeChart(canvas, points, color, label) {
     const { context: ctx, width, height } = setupCanvas(canvas),
       p = { l: 52, r: 18, t: 22, b: 35 },
@@ -378,6 +382,7 @@
         }),
     );
   }
+
   function renderActivity() {
     document.getElementById("activity-source-weight").textContent = Number(
       document.getElementById("weight").value,
@@ -427,11 +432,13 @@
     write(keys.foods, foods);
     renderFood();
   });
+
   document.addEventListener("pesate:activity-added", (event) => {
     activities.push({ id: id(), ...event.detail });
     write(keys.activities, activities);
     renderActivity();
   });
+
   foodDate.onchange = renderFood;
   activityDate.onchange = renderActivity;
   document.getElementById("weight").addEventListener("input", () => {
@@ -444,6 +451,7 @@
     if (originalCalculate) originalCalculate();
     drawBodyChart();
   };
+
   function redrawAll() {
     if (typeof run === "function") run();
     renderWeights();
@@ -451,6 +459,7 @@
     renderFood();
     renderActivity();
   }
+
   document
     .getElementById("model-tab")
     .addEventListener("click", () => setTimeout(drawBodyChart));

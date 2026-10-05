@@ -1,6 +1,7 @@
 const $ = (s) => document.querySelector(s);
 let weight = 0,
   tare = 0;
+
 function render() {
   const gross = Math.max(0, weight - tare),
     target = Number($("#target").value) || 25;
@@ -53,6 +54,7 @@ $("#reset").onclick = () => {
     "Enter a description and simulate a reading to begin.";
   render();
 };
+
 document.querySelectorAll(".nav").forEach(
   (btn) =>
     (btn.onclick = () => {
@@ -146,6 +148,7 @@ const translations = {
   },
 };
 let language = localStorage.getItem("weigh-it-language") || "es";
+
 function applyLanguage() {
   document.documentElement.lang = language;
   document.querySelectorAll("[data-i18n]").forEach((el) => {

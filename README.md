@@ -1,11 +1,12 @@
-# Weigh IT FastAPI proof of concept
+# PesateAI
 
-This is a small clickable MVP for human weight tracking and scenario modeling. It keeps the existing legacy files untouched.
+This is an application to track human body weight composition, energy ingestion, physical activity and scenario modeling.
 
 ## Run
 
 ```powershell
-cd fastapi_poc
+py -m venv .venv
+.\.venv\Scripts\activate
 py -m pip install -r requirements.txt
 py -m uvicorn main:app --reload
 ```
@@ -33,9 +34,3 @@ Open http://127.0.0.1:8000.
 `data/users.sqlite` is created automatically when FastAPI starts. Do not commit or distribute this file because it contains account and personal tracking data. Every new account begins without weight, food, or activity entries. Subsequent changes are synchronized from the browser to the signed-in user record.
 
 The session cookie is configured for local HTTP development. Before an internet deployment, enable HTTPS and change the cookie configuration to `secure=True`.
-
-The model is an MVP approximation for exploration, not medical advice. The next agent slice should connect the equations and defaults to the legacy documentation and add automated tests around `calculateProjection`.
-
-## Next agile slice
-
-Read the legacy manual and source assets, map each old screen/control to a route or component, and replace the simulated reading with the real device/domain adapter.
