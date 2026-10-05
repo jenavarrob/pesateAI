@@ -22,8 +22,10 @@ USERS_DB = PROJECT_DIR / "data" / "users.sqlite"
 SESSION_COOKIE = "pesate_session"
 SESSION_DAYS = 14
 PASSWORD_ITERATIONS = 310_000
-app = FastAPI(title="Weigh IT - proof of concept", version="0.1.0")
+
+app = FastAPI(title="PesateAI - Human Body Composition Tracker", version="0.1.0")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
