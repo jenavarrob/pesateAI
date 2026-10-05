@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PesateAI · Modelo personal</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='human.css') }}" />
+    <style>
+      .app-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .app-tab {
+        border: 1px solid #dce3e8;
+        background: #fff;
+        color: #728091;
+        border-radius: 6px;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .app-tab.active {
+        background: #2776db;
+        color: #fff;
+        border-color: #2776db;
+      }
+      .intake-view {
+        max-width: 780px;
+      }
+      .upload-box {
+        border: 2px dashed #cbd7e1;
+        border-radius: 10px;
+        padding: 38px;
+        text-align: center;
+        background: #fbfcfd;
+      }
+      .photo-preview {
+        display: none;
+        max-width: 100%;
+        max-height: 520px;
+        border-radius: 8px;
+        margin: 24px auto 0;
+        box-shadow: 0 2px 10px #1b2c3b18;
+      }
+      .photo-preview.visible {
+        display: block;
+      }
+      .upload-message {
+        color: #728091;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <b>P</b><strong>PesateAI</strong
+        ><small data-i18n="subtitle">MODELO PERSONAL DE PESO</small>
+      </div>
+      <div class="top-actions">
+        <span class="saved" data-i18n="mvp"
+          >MVP · MODELO DE 2 COMPARTIMENTOS</span
+        ><button id="language-toggle">EN</button>
+      </div>
+    </header>
+    <main class="page">
+      <section class="intro">
+        <div>
+          <div class="eyebrow" data-i18n="eyebrow">HERRAMIENTA INTERACTIVA</div>
+          <h1 data-i18n="title">Explora tu evolución de peso</h1>
+          <p data-i18n="intro">
+            Ajusta tu ingesta energética y actividad física para visualizar una
+            posible evolución de peso, masa grasa y masa libre de grasa.
+          </p>
+        </div>
+        <div class="formula">
+          <strong>kcal/día − gasto</strong
+          ><span data-i18n="energyBalance">balance energético</span>
+        </div>
+      </section>
+      <section class="layout">
+        <aside class="controls card">
+          <div class="card-title">
+            <div>
+              <div class="eyebrow" data-i18n="yourData">TUS DATOS</div>
+              <h2 data-i18n="profile">Perfil inicial</h2>
+            </div>
+          </div>
+          <div class="form-grid">
+            <label
+              ><span data-i18n="sex">Sexo</span
+              ><select id="sex">
+                <option value="female" data-i18n="female">Mujer</option>
+                <option value="male" data-i18n="male">Hombre</option>
+              </select></label
+            ><label
+              ><span data-i18n="age">Edad</span
+              ><input
+                id="age"
+                type="number"
+                value="35"
+                min="16"
+                max="100" /></label
+            ><label
+              ><span data-i18n="height">Altura (cm)</span
+              ><input
+                id="height"
+                type="number"
+                value="170"
+                min="120"
+                max="230" /></label
+            ><label
+              ><span data-i18n="weight">Peso inicial (kg)</span
+              ><input
+                id="weight"
+                type="number"
+                value="75"
+                min="30"
+                max="300"
+                step=".1" /></label
+            ><label
+              ><span data-i18n="fatPercent">Grasa inicial (%)</span
+              ><input
+                id="fat"
+                type="number"
+                value="25"
+                min="3"
+                max="70"
+                step=".1"
+            /></label>
+          </div>
+          <hr />
+          <div class="eyebrow" data-i18n="scenario">ESCENARIO</div>
+          <div class="form-grid">
+            <label
+              ><span data-i18n="intake">Ingesta actual (kcal/día)</span
+              ><input
+                id="intake"
+                type="number"
+                value="2200"
+                min="500"
+                max="8000" /></label
+            ><label
+              ><span data-i18n="pal">Actividad (PAL)</span
+              ><input
+                id="pal"
+                type="number"
+                value="1.5"
+                min="1.1"
+                max="2.5"
+                step=".05" /></label
+            ><label
+              ><span data-i18n="days">Horizonte (días)</span
+              ><input
+                id="days"
+                type="number"
+                value="90"
+                min="7"
+                max="730" /></label
+            ><label
+              ><span data-i18n="interventionIntake">Ingesta intervención</span
+              ><input
+                id="target-intake"
+                type="number"
+                value="1800"
+                min="500"
+                max="8000" /></label
+            ><label
+              ><span data-i18n="interventionPal">PAL intervención</span
+              ><input
+                id="target-pal"
+                type="number"
+                value="1.6"
+                min="1.1"
+                max="2.5"
+                step=".05"
+            /></label>
+          </div>
+          <button class="primary full" id="calculate" data-i18n="calculate">
+            Calcular proyección
+          </button>
+          <p class="note" data-i18n="note">
+            Estimación educativa, no consejo médico. El modelo usa una
+            aproximación simplificada para este MVP.
+          </p>
+        </aside>
+        <section class="results">
+          <div class="metrics">
+            <div class="metric card">
+              <span data-i18n="finalWeight">Peso final estimado</span
+              ><strong id="out-weight">—</strong><small>kg</small>
+            </div>
+            <div class="metric card">
+              <span data-i18n="fatMass">Masa grasa final</span
+              ><strong id="out-fat">—</strong><small>kg</small>
+            </div>
+            <div class="metric card">
+              <span data-i18n="leanMass">Masa libre de grasa</span
+              ><strong id="out-lean">—</strong><small>kg</small>
+            </div>
+            <div class="metric card">
+              <span data-i18n="dailyNeed">Gasto estimado</span
+              ><strong id="out-tdee">—</strong><small>kcal/día</small>
+            </div>
+          </div>
+          <div class="chart-card card">
+            <div class="chart-head">
+              <div>
+                <div class="eyebrow" data-i18n="energyChart">
+                  ENERGÍA Y ACTIVIDAD
+                </div>
+                <h2 data-i18n="energyHistory">
+                  Historia de ingesta y actividad
+                </h2>
+              </div>
+              <span class="legend"
+                ><i class="intake-dot"></i
+                ><span data-i18n="intakeLegend">Ingesta</span
+                ><i class="pal-dot"></i>PAL</span
+              >
+            </div>
+            <canvas id="energy-chart" height="210"></canvas>
+            <div class="chart-footer">
+              <span data-i18n="leftAxisKcal">Izquierda: kcal/día</span
+              ><span data-i18n="rightAxisPal">Derecha: PAL</span>
+            </div>
+          </div>
+          <div class="chart-card card">
+            <div class="chart-head">
+              <div>
+                <div class="eyebrow" data-i18n="bodyChart">CUERPO</div>
+                <h2 data-i18n="bodyHistory">
+                  Historia de composición corporal
+                </h2>
+              </div>
+              <span class="legend"
+                ><i class="weight-dot"></i
+                ><span data-i18n="weightLegend">Peso</span
+                ><i class="fat-dot"></i><span data-i18n="fatLegend">Grasa</span
+                ><i class="lean-dot"></i
+                ><span data-i18n="leanLegend">Libre de grasa</span></span
+              >
+            </div>
+            <canvas id="body-chart" height="210"></canvas>
+            <div class="chart-footer">
+              <span data-i18n="leftAxisKg">Izquierda: kg</span
+              ><span data-i18n="timeline">Línea temporal en días</span>
+            </div>
+          </div>
+          <p class="disclaimer" data-i18n="disclaimer">
+            Las proyecciones son orientativas. El peso real depende de muchos
+            factores y debe interpretarse junto con un profesional de la salud.
+          </p>
+        </section>
+      </section>
+    </main>
+    <script src="{{ url_for('static', path='human-model.js') }}"></script>
+    <script src="{{ url_for('static', path='human-app.js') }}"></script>
+  </body>
+</html>

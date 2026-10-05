@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PesateAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='human.css') }}" />
+    <style>
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .tab {
+        border: 1px solid #dce3e8;
+        background: #fff;
+        color: #728091;
+        border-radius: 6px;
+        padding: 10px 16px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .tab.active {
+        background: #2776db;
+        color: #fff;
+      }
+      .view.hidden {
+        display: none;
+      }
+      .intake-card {
+        max-width: 900px;
+      }
+      .upload-box {
+        border: 2px dashed #cbd7e1;
+        border-radius: 10px;
+        padding: 38px 24px;
+        text-align: center;
+        background: #fbfcfd;
+      }
+      .upload-box input {
+        display: block;
+        margin: 18px auto;
+      }
+      .preview {
+        display: none;
+        max-width: 100%;
+        max-height: 520px;
+        margin: 22px auto 0;
+        border-radius: 8px;
+      }
+      .preview.visible {
+        display: block;
+      }
+      .hint {
+        color: #728091;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .catalogue-results {
+        margin-top: 14px;
+        border-top: 1px solid #e6ebef;
+      }
+      .food-result {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: #fff;
+        border: 0;
+        border-bottom: 1px solid #e6ebef;
+        padding: 12px 2px;
+        cursor: pointer;
+      }
+      .food-result:hover {
+        background: #f5f8fb;
+      }
+      .daily-total {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #dce3e8;
+        margin-top: 18px;
+        padding-top: 15px;
+      }
+      .daily-total strong {
+        color: #2776db;
+      }
+      .search-input {
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #dce3e8;
+        border-radius: 5px;
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <b>P</b><strong>PesateAI</strong
+        ><small>MODELO PERSONAL DE PESO (version 2609)</small>
+      </div>
+      <div class="top-actions">
+        <span class="saved">{{ now }}</span
+        ><button id="language-toggle">EN</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="tabs">
+        <button class="tab active" id="model-tab">Modelo de peso</button
+        ><button class="tab" id="intake-tab">Ingestas de hoy</button
+        ><button class="tab" id="activity-tab">Actividad física</button>
+      </div>
+      <section class="view" id="model-view">
+        <section class="intro">
+          <div>
+            <div class="eyebrow">HERRAMIENTA INTERACTIVA</div>
+            <h1>Explora tu evolución de peso</h1>
+            <p>
+              Ajusta tu ingesta energética y actividad física para visualizar
+              una posible evolución de peso, masa grasa y masa libre de grasa.
+            </p>
+          </div>
+        </section>
+        <section class="layout">
+          <aside class="controls card">
+            <div class="eyebrow">TUS DATOS</div>
+            <h2>Perfil inicial</h2>
+            <div class="form-grid">
+              <label
+                >Sexo<select id="sex">
+                  <option value="female">Mujer</option>
+                  <option value="male">Hombre</option>
+                </select></label
+              ><label>Edad<input id="age" type="number" value="35" /></label
+              ><label
+                >Altura (cm)<input
+                  id="height"
+                  type="number"
+                  value="170" /></label
+              ><label
+                >Peso inicial (kg)<input
+                  id="weight"
+                  type="number"
+                  value="75" /></label
+              ><label
+                >Grasa inicial (%)<input
+                  id="fat"
+                  type="number"
+                  value="25" /></label
+              ><label
+                >Horizonte (días)<input
+                  id="days"
+                  type="number"
+                  value="90" /></label
+              ><label
+                >Ingesta actual<input
+                  id="intake"
+                  type="number"
+                  value="2200" /></label
+              ><label
+                >PAL actual<input
+                  id="pal"
+                  type="number"
+                  value="1.5"
+                  step=".05" /></label
+              ><label
+                >Ingesta intervención<input
+                  id="target-intake"
+                  type="number"
+                  value="1800" /></label
+              ><label
+                >PAL intervención<input
+                  id="target-pal"
+                  type="number"
+                  value="1.6"
+                  step=".05"
+              /></label>
+            </div>
+            <button class="primary full" id="calculate">
+              Calcular proyección
+            </button>
+          </aside>
+          <section class="results">
+            <div class="metrics">
+              <div class="metric card">
+                <span>Peso final</span><strong id="out-weight">—</strong
+                ><small>kg</small>
+              </div>
+              <div class="metric card">
+                <span>Masa grasa</span><strong id="out-fat">—</strong
+                ><small>kg</small>
+              </div>
+              <div class="metric card">
+                <span>Masa libre de grasa</span><strong id="out-lean">—</strong
+                ><small>kg</small>
+              </div>
+              <div class="metric card">
+                <span>Gasto estimado</span><strong id="out-tdee">—</strong
+                ><small>kcal/día</small>
+              </div>
+            </div>
+            <div class="chart-card card">
+              <h2>Ingesta y actividad</h2>
+              <canvas id="energy-chart" height="210"></canvas>
+            </div>
+            <div class="chart-card card">
+              <h2>Composición corporal</h2>
+              <canvas id="body-chart" height="210"></canvas>
+            </div>
+          </section>
+        </section>
+      </section>
+      <section class="view hidden" id="intake-view">
+        <section class="intro">
+          <div>
+            <div class="eyebrow">REGISTRO DIARIO</div>
+            <h1>Ingestas de hoy</h1>
+            <p>
+              Sube una foto y después utiliza el catálogo para identificar
+              manualmente el alimento y su valor energético aproximado.
+            </p>
+          </div>
+        </section>
+        <div class="card intake-card">
+          <h2>1. Subir tu foto</h2>
+          <p class="hint">
+            Coloca una moneda mexicana de 10 pesos junto al plato como
+            referencia de escala. En esta versión la imagen solo se muestra.
+          </p>
+          <div class="upload-box">
+            <strong>Selecciona una imagen de comida</strong
+            ><input id="food-photo" type="file" accept="image/*" /><img
+              id="food-preview"
+              class="preview"
+              alt="Vista previa de la comida"
+            />
+            <p id="upload-status" class="hint">
+              Aún no se ha seleccionado ninguna foto.
+            </p>
+          </div>
+          <hr />
+          <h2>2. Buscar en el catálogo</h2>
+          <p class="hint">
+            Busca el alimento que aparece en la foto, revisa las kcal y
+            selecciónalo para añadirlo al total de hoy.
+          </p>
+          <input
+            id="manual-search"
+            class="search-input"
+            type="search"
+            placeholder="Escribe un alimento, por ejemplo: arroz, pasta, manzana"
+          />
+          <div id="manual-results" class="catalogue-results">
+            <p class="hint">
+              Escribe al menos dos letras para buscar en nutrition.sqlite.
+            </p>
+          </div>
+          <div class="daily-total">
+            <span>Total añadido hoy</span
+            ><strong><span id="manual-total">0</span> kcal</strong>
+          </div>
+        </div>
+      </section>
+      <section class="view hidden" id="activity-view">
+        <section class="intro">
+          <div>
+            <div class="eyebrow">GASTO ENERGÉTICO</div>
+            <h1>Actividad física de hoy</h1>
+            <p>
+              Busca una actividad, indica su duración y añade una estimación de
+              las kilocalorías utilizadas.
+            </p>
+          </div>
+        </section>
+        <div class="card intake-card">
+          <h2>Buscar actividad</h2>
+          <p class="hint">
+            Los datos originales se expresan en kcal/lb/min. PesateAI también
+            los convierte a kcal/kg/min.
+          </p>
+          <div class="form-grid">
+            <label
+              >Peso corporal (kg)<input
+                id="activity-weight"
+                type="number"
+                min="20"
+                max="400"
+                step="0.1"
+                value="75" /></label
+            ><label
+              >Duración (minutos)<input
+                id="activity-minutes"
+                type="number"
+                min="1"
+                max="1440"
+                value="30"
+            /></label>
+          </div>
+          <input
+            id="activity-search"
+            class="search-input"
+            type="search"
+            placeholder="Ej.: caminar, running, natación"
+          />
+          <div id="activity-results" class="catalogue-results">
+            <p class="hint">Mostrando el catálogo de actividades.</p>
+          </div>
+          <div class="daily-total">
+            <span>Gasto añadido hoy</span
+            ><strong><span id="activity-total">0</span> kcal</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="{{ url_for('static', path='human-model.js') }}"></script>
+    <script src="{{ url_for('static', path='human-app.js') }}"></script>
+    <script>
+      const modelTab = document.getElementById("model-tab"),
+        intakeTab = document.getElementById("intake-tab"),
+        modelView = document.getElementById("model-view"),
+        intakeView = document.getElementById("intake-view");
+      function showView(showIntake) {
+        modelTab.classList.toggle("active", !showIntake);
+        intakeTab.classList.toggle("active", showIntake);
+        modelView.classList.toggle("hidden", showIntake);
+        intakeView.classList.toggle("hidden", !showIntake);
+      }
+      modelTab.onclick = () => showView(false);
+      intakeTab.onclick = () => showView(true);
+      document.getElementById("food-photo").onchange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const preview = document.getElementById("food-preview");
+        preview.src = URL.createObjectURL(file);
+        preview.classList.add("visible");
+        document.getElementById("upload-status").textContent = file.name;
+      };
+      const manualSearch = document.getElementById("manual-search"),
+        manualResults = document.getElementById("manual-results"),
+        manualTotal = document.getElementById("manual-total");
+      let selectedKcal = 0,
+        searchTimer;
+      function renderCatalogue(items) {
+        if (!items.length) {
+          manualResults.innerHTML =
+            '<p class="hint">No se encontraron alimentos.</p>';
+          return;
+        }
+        manualResults.innerHTML = items
+          .map(
+            (item, index) =>
+              `<button class="food-result" data-index="${index}"><strong>${item.name}</strong><br><small>${item.kcal == null ? "kcal no disponible" : item.kcal + " kcal"} · catálogo: ${item.source}</small></button>`,
+          )
+          .join("");
+        manualResults.querySelectorAll(".food-result").forEach(
+          (button, index) =>
+            (button.onclick = () => {
+              const kcal = Number(items[index].kcal);
+              if (!Number.isFinite(kcal)) return;
+              selectedKcal += kcal;
+              manualTotal.textContent = Math.round(selectedKcal);
+              button.insertAdjacentHTML("beforeend", " ✓ añadido");
+            }),
+        );
+      }
+      manualSearch.oninput = () => {
+        clearTimeout(searchTimer);
+        const query = manualSearch.value.trim();
+        if (query.length < 2) {
+          manualResults.innerHTML =
+            '<p class="hint">Escribe al menos dos letras para buscar en nutrition.sqlite.</p>';
+          return;
+        }
+        searchTimer = setTimeout(async () => {
+          manualResults.innerHTML = '<p class="hint">Buscando…</p>';
+          try {
+            const response = await fetch(
+              "/api/nutrition/search?q=" + encodeURIComponent(query),
+            );
+            const data = await response.json();
+            renderCatalogue(data.items || []);
+          } catch (error) {
+            manualResults.innerHTML =
+              '<p class="hint">No se pudo consultar el catálogo local.</p>';
+          }
+        }, 250);
+      };
+    </script>
+    <script src="{{ url_for('static', path='numberfix.js') }}"></script>
+    <script src="{{ url_for('static', path='catalogue-browser.js') }}"></script>
+    <script src="{{ url_for('static', path='physical-activity.js') }}"></script>
+    <script src="{{ url_for('static', path='tracking.js') }}"></script>
+    <script src="{{ url_for('static', path='model-history-overlay.js') }}"></script>
+    <script src="{{ url_for('static', path='measured-weight-overlay.js') }}"></script>
+    <script src="{{ url_for('static', path='server-sync.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weigh IT · Proof of concept</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+<header class="topbar"><div class="brand"><b>W</b><strong>Weigh IT</strong><small data-i18n="webEdition">EDICIÓN WEB</small></div><div class="top-actions"><div class="status">● <span data-i18n="simulatorConnected">Simulador conectado</span>　|　{{ now }}</div><button class="language" id="language-toggle" type="button" style="margin-left:12px;border:1px solid #dce3e8;background:#fff;color:#2776db;border-radius:5px;padding:8px 11px;font-weight:800;cursor:pointer">EN</button></div></header>
+<main class="shell">
+  <aside class="sidebar"><div class="eyebrow" data-i18n="currentProject">PROYECTO ACTUAL</div><h1 data-i18n="materialBalance">Balance de materiales</h1><nav>
+    <button class="nav active" data-panel="weighing" data-i18n="weighing">◉　Pesaje</button><button class="nav" data-panel="calibration" data-i18n="calibration">⌁　Calibración</button><button class="nav" data-panel="history" data-i18n="history">▤　Historial</button>
+  </nav><div class="side-foot">POC BUILD<br><span>0.1 · FASTAPI</span></div></aside>
+  <section class="content"><div class="head"><div><div class="eyebrow" data-i18n="liveView">PESAJE / VISTA EN VIVO</div><h2 id="title" data-i18n="weighingConsole">Consola de pesaje</h2></div><button class="ghost" id="reset" data-i18n="resetSession">Reiniciar sesión</button></div>
+  <section class="panel" id="weighing"><div class="grid">
+    <div class="card"><div class="card-head"><div><div class="eyebrow" data-i18n="liveReading">LECTURA EN VIVO</div><h3 data-i18n="platformScale">Báscula de plataforma</h3></div><span class="pill" data-i18n="stable">ESTABLE</span></div><div class="reading"><span id="weight">0.00</span><small>kg</small></div><div class="scale"><i id="scale-fill"></i></div><div class="meta"><span data-i18n="grossWeight">Peso bruto</span><b id="gross">0.00 kg</b></div><div class="meta muted"><span data-i18n="tare">Tara</span><b id="tare">0.00 kg</b></div><div class="actions"><button class="primary" id="simulate" data-i18n="simulateWeight">Simular peso</button><button class="secondary" id="tare-btn" data-i18n="setTare">Establecer tara</button></div></div>
+    <div class="card"><div class="eyebrow" data-i18n="currentLoad">CARGA ACTUAL</div><h3 id="load-name" data-i18n="noLoadRegistered">No hay carga registrada</h3><label data-i18n="loadDescription">Descripción de la carga</label><input id="load" data-i18n-placeholder="loadPlaceholder" placeholder="p. ej., Lote 24-A"><label data-i18n="targetWeight">Peso objetivo (kg)</label><input id="target" type="number" value="25" min="0" step=".1"><button class="primary full" id="record" data-i18n="recordWeighing">Registrar pesaje</button><p class="hint" id="message" data-i18n="startMessage">Introduce una descripción y simula una lectura para comenzar.</p></div>
+  </div><div class="card chart"><div class="card-head"><div><div class="eyebrow" data-i18n="processWindow">VENTANA DE PROCESO</div><h3 data-i18n="targetActual">Objetivo frente a real</h3></div><span class="pill blue" id="accuracy" data-i18n="waiting">Esperando</span></div><div class="bar"><i id="bar-fill"></i><b id="target-line"></b></div><div class="labels"><span>0 kg</span><span id="target-label">Objetivo 25 kg</span><span>50 kg</span></div></div></section>
+  <section class="panel hidden" id="calibration"><div class="card empty"><div class="big">⌁</div><h3 data-i18n="calibrationWorkspace">Espacio de calibración</h3><p data-i18n="calibrationReserved">Reservado para el flujo de calibración de la aplicación antigua.</p><button class="secondary" data-i18n="startCalibration">Iniciar calibración</button></div></section>
+  <section class="panel hidden" id="history"><div class="card"><div class="eyebrow" data-i18n="recentActivity">ACTIVIDAD RECIENTE</div><h3 data-i18n="weighingHistory">Historial de pesajes</h3><div id="history-empty" class="hint row" data-i18n="noRecords">Todavía no hay registros en esta sesión.</div><div id="history-list"></div></div></section>
+  </section>
+</main><script src="{{ url_for('static', path='app.js') }}"></script>
+</body></html>

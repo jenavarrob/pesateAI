@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PesateAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='human.css') }}" />
+    <style>
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .tab {
+        border: 1px solid #dce3e8;
+        background: #fff;
+        color: #728091;
+        border-radius: 6px;
+        padding: 10px 16px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .tab.active {
+        background: #2776db;
+        color: #fff;
+      }
+      .view.hidden {
+        display: none;
+      }
+      .upload-card {
+        max-width: 820px;
+      }
+      .upload-box {
+        border: 2px dashed #cbd7e1;
+        border-radius: 10px;
+        padding: 44px 24px;
+        text-align: center;
+        background: #fbfcfd;
+      }
+      .upload-box input {
+        display: block;
+        margin: 20px auto 0;
+      }
+      .preview {
+        display: none;
+        max-width: 100%;
+        max-height: 560px;
+        margin: 24px auto 0;
+        border-radius: 8px;
+      }
+      .preview.visible {
+        display: block;
+      }
+      .upload-note {
+        color: #728091;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <b>P</b><strong>PesateAI</strong
+        ><small data-i18n="subtitle">MODELO PERSONAL DE PESO</small>
+      </div>
+      <div class="top-actions">
+        <span class="saved">{{ now }}</span
+        ><button id="language-toggle">EN</button>
+      </div>
+    </header>
+    <main class="page">
+      <div class="tabs">
+        <button class="tab active" id="model-tab" data-i18n="modelTab">
+          Modelo de peso</button
+        ><button class="tab" id="intake-tab" data-i18n="intakeTab">
+          Ingestas de hoy
+        </button>
+      </div>
+      <section class="view" id="model-view">
+        <section class="intro">
+          <div>
+            <div class="eyebrow" data-i18n="eyebrow">
+              HERRAMIENTA INTERACTIVA
+            </div>
+            <h1 data-i18n="title">Explora tu evolución de peso</h1>
+            <p data-i18n="intro">
+              Ajusta tu ingesta energética y actividad física para visualizar
+              una posible evolución de peso, masa grasa y masa libre de grasa.
+            </p>
+          </div>
+        </section>
+        <section class="layout">
+          <aside class="controls card">
+            <div class="eyebrow" data-i18n="yourData">TUS DATOS</div>
+            <h2 data-i18n="profile">Perfil inicial</h2>
+            <div class="form-grid">
+              <label
+                >Sexo<select id="sex">
+                  <option value="female">Mujer</option>
+                  <option value="male">Hombre</option>
+                </select></label
+              ><label>Edad<input id="age" type="number" value="35" /></label
+              ><label
+                >Altura<input id="height" type="number" value="170" /></label
+              ><label
+                >Peso inicial<input
+                  id="weight"
+                  type="number"
+                  value="75" /></label
+              ><label
+                >Grasa inicial (%)<input
+                  id="fat"
+                  type="number"
+                  value="25" /></label
+              ><label>Días<input id="days" type="number" value="90" /></label
+              ><label
+                >Ingesta actual<input
+                  id="intake"
+                  type="number"
+                  value="2200" /></label
+              ><label
+                >PAL actual<input
+                  id="pal"
+                  type="number"
+                  value="1.5"
+                  step=".05" /></label
+              ><label
+                >Ingesta intervención<input
+                  id="target-intake"
+                  type="number"
+                  value="1800" /></label
+              ><label
+                >PAL intervención<input
+                  id="target-pal"
+                  type="number"
+                  value="1.6"
+                  step=".05"
+              /></label>
+            </div>
+            <button class="primary full" id="calculate" data-i18n="calculate">
+              Calcular proyección
+            </button>
+          </aside>
+          <section class="results">
+            <div class="metrics">
+              <div class="metric card">
+                <span>Peso final</span><strong id="out-weight">—</strong
+                ><small>kg</small>
+              </div>
+              <div class="metric card">
+                <span>Masa grasa</span><strong id="out-fat">—</strong
+                ><small>kg</small>
+              </div>
+              <div class="metric card">
+                <span>Masa libre de grasa</span><strong id="out-lean">—</strong
+                ><small>kg</small>
+              </div>
+              <div class="metric card">
+                <span>Gasto estimado</span><strong id="out-tdee">—</strong
+                ><small>kcal/día</small>
+              </div>
+            </div>
+            <div class="chart-card card">
+              <h2>Ingesta y actividad</h2>
+              <canvas id="energy-chart" height="210"></canvas>
+            </div>
+            <div class="chart-card card">
+              <h2>Composición corporal</h2>
+              <canvas id="body-chart" height="210"></canvas>
+            </div>
+          </section>
+        </section>
+      </section>
+      <section class="view hidden" id="intake-view">
+        <div class="intro">
+          <div>
+            <div class="eyebrow" data-i18n="todayIntake">REGISTRO DIARIO</div>
+            <h1 data-i18n="intakeTitle">Ingestas de hoy</h1>
+            <p data-i18n="intakeIntro">
+              Sube una foto de tu comida después de comerla. Por ahora PesateAI
+              solo la muestra y la prepara para el análisis nutricional.
+            </p>
+          </div>
+        </div>
+        <div class="card upload-card">
+          <h2 data-i18n="uploadFood">Subir foto de comida</h2>
+          <p class="upload-note" data-i18n="coinInstruction">
+            Coloca una moneda mexicana de 10 pesos junto al plato como
+            referencia de escala.
+          </p>
+          <div class="upload-box">
+            <strong data-i18n="choosePhoto">Selecciona una imagen</strong
+            ><input id="food-photo" type="file" accept="image/*" /><img
+              id="food-preview"
+              class="preview"
+              alt="Vista previa de la comida"
+            />
+            <p id="upload-status" class="upload-note" data-i18n="noPhoto">
+              Aún no se ha seleccionado ninguna foto.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="{{ url_for('static', path='human-model.js') }}"></script>
+    <script src="{{ url_for('static', path='human-app.js') }}"></script>
+    <script>
+      const modelTab = document.getElementById("model-tab"),
+        intakeTab = document.getElementById("intake-tab"),
+        modelView = document.getElementById("model-view"),
+        intakeView = document.getElementById("intake-view");
+      function showView(intake) {
+        modelTab.classList.toggle("active", !intake);
+        intakeTab.classList.toggle("active", intake);
+        modelView.classList.toggle("hidden", intake);
+        intakeView.classList.toggle("hidden", !intake);
+      }
+      modelTab.onclick = () => showView(false);
+      intakeTab.onclick = () => showView(true);
+      document.getElementById("food-photo").onchange = (e) => {
+        const file = e.target.files[0],
+          preview = document.getElementById("food-preview"),
+          status = document.getElementById("upload-status");
+        if (!file) return;
+        preview.src = URL.createObjectURL(file);
+        preview.classList.add("visible");
+        status.textContent = file.name;
+      };
+    </script>
+  </body>
+</html>
