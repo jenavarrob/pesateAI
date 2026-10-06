@@ -8,6 +8,10 @@ import re
 import unicodedata
 from typing import Any
 
+# for master-password gate
+import os
+from fastapi.responses import RedirectResponse
+
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
@@ -23,10 +27,27 @@ SESSION_COOKIE = "pesate_session"
 SESSION_DAYS = 14
 PASSWORD_ITERATIONS = 310_000
 
+# for master-password gate
+MASTER_PASSWORD = os.environ["CLAVE_MASTER"]
+MASTER_COOKIE = "master_access"
+
 app = FastAPI(title="PesateAI - Human Body Composition Tracker", version="0.1.0")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
+
+@app.middleware("http")
+async def master_password_gate(request: Request, call_next):
+    # Allow the password page and its form submission through
+    if request.url.path == "/master-login":
+        return await call_next(request)
+
+    # Already authenticated
+    if request.cookies.get(MASTER_COOKIE) == "authenticated":
+        return await call_next(request)
+
+    # Everything else requires the master password
+    return RedirectResponse(url="/master-login", status_code=303)
 
 
 class Credentials(BaseModel):
@@ -215,6 +236,56 @@ async def index(request: Request) -> Any:
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "app": "weigh-it-poc"}
+
+@app.get("/master-login", response_class=HTMLResponse)
+async def master_login():
+    return HTMLResponse("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>PesateAI</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <h1>PesateAI</h1>
+        <form method="post" action="/master-login">
+            <label for="password">Password</label>
+            <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                autofocus
+            >
+            <button type="submit">Enter</button>
+        </form>
+    </body>
+    </html>
+    """)
+
+
+@app.post("/master-login")
+async def master_login_submit(request: Request):
+    form = await request.form()
+    password = form.get("password", "")
+
+    if not isinstance(password, str) or not secrets.compare_digest(
+        password, MASTER_PASSWORD
+    ):
+        return HTMLResponse(
+            "Incorrect password.",
+            status_code=401,
+        )
+
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie(
+        key=MASTER_COOKIE,
+        value="authenticated",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
+    return response
 
 
 @app.post("/api/auth/register")
