@@ -11,6 +11,7 @@ from typing import Any
 # for master-password gate
 import os
 from fastapi.responses import RedirectResponse
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse
@@ -28,7 +29,15 @@ SESSION_DAYS = 14
 PASSWORD_ITERATIONS = 310_000
 
 # for master-password gate
-MASTER_PASSWORD = os.environ["CLAVE_MASTER"]
+load_dotenv()
+MASTER_PASSWORD = os.getenv("CLAVE_MASTER")
+
+if not MASTER_PASSWORD:
+    raise RuntimeError(
+        "Master password environment variable is not set. "
+        "Please configure it in your environment or .env file."
+    )
+
 MASTER_COOKIE = "master_access"
 
 app = FastAPI(title="PesateAI - Human Body Composition Tracker", version="0.1.0")
