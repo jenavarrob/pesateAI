@@ -4,7 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>PesateAI</title>
+    <!--
     <link rel="stylesheet" href="{{ url_for('static', path='human.css') }}" />
+    -->
+    <link rel="stylesheet" href="/static/human.css" />
+
     <style>
       .tabs {
         display: flex;
@@ -311,8 +315,14 @@
         </div>
       </section>
     </main>
+
+    <!-- Scripts
     <script src="{{ url_for('static', path='human-model.js') }}"></script>
     <script src="{{ url_for('static', path='human-app.js') }}"></script>
+    -->
+    <script src="static/human-model.js"></script>
+    <script src="static/human-app.js"></script>
+
     <script>
       const modelTab = document.getElementById("model-tab"),
         intakeTab = document.getElementById("intake-tab"),

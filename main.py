@@ -41,6 +41,7 @@ if not MASTER_PASSWORD:
 MASTER_COOKIE = "master_access"
 
 app = FastAPI(title="PesateAI - Human Body Composition Tracker", version="0.1.0")
+
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
