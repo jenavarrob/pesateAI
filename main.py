@@ -20,10 +20,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
-NUTRITION_DB = PROJECT_DIR / "data" / "nutrition.sqlite"
+
+NUTRITION_DB = BASE_DIR / "data" / "nutrition.sqlite"
 USERS_DB = PROJECT_DIR / "data" / "users.sqlite"
+
 SESSION_COOKIE = "pesate_session"
 SESSION_DAYS = 14
 PASSWORD_ITERATIONS = 310_000
@@ -495,11 +497,14 @@ SPANISH_ACTIVITY_TERMS = {
 
 
 def _catalogue_path() -> Path | None:
-    candidates = (
+    path = BASE_DIR / "data" / "nutrition.sqlite"
+    return path if path.is_file() else None
+
+    """ candidates = (
         PROJECT_DIR / "data" / "nutrition.sqlite",
         BASE_DIR / "data" / "nutrition.sqlite",
     )
-    return next((path for path in candidates if path.is_file()), None)
+    return next((path for path in candidates if path.is_file()), None) """
 
 
 def _catalogue_connection() -> sqlite3.Connection:
