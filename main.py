@@ -253,8 +253,18 @@ _initialize_users_database()
 async def index(request: Request) -> Any:
     user = _session_user(request)
     template = "dashboard.html" if user else "auth.html"
-    return templates.TemplateResponse(request=request, name=template, context={"now": datetime.now().strftime("%d.%m.%Y %H:%M"), "user": user})
 
+    response = templates.TemplateResponse(
+        request=request,
+        name=template,
+        context={
+            "now": datetime.now().strftime("%d.%m.%Y %H:%M"),
+            "user": user,
+        },
+    )
+    response.headers["X-Rendered-Template"] = template
+    return response
+    
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "app": "weigh-it-poc"}
