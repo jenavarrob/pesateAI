@@ -35,6 +35,7 @@ function showResults(items) {
       }),
   );
 }
+
 search.oninput = () => {
   clearTimeout(searchTimer);
   const query = search.value.trim();

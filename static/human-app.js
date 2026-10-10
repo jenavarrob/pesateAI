@@ -90,6 +90,7 @@ const translations = {
   },
 };
 let lang = localStorage.getItem("pesate-language") || "es";
+
 function applyLanguage() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -103,6 +104,7 @@ $("language-toggle").onclick = () => {
   localStorage.setItem("pesate-language", lang);
   applyLanguage();
 };
+
 function readInputs() {
   return {
     sex: $("sex").value,
@@ -117,6 +119,7 @@ function readInputs() {
     targetPal: +$("target-pal").value,
   };
 }
+
 function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
   const ctx = canvas.getContext("2d"),
     w = canvas.clientWidth,
@@ -163,6 +166,7 @@ function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
   ctx.fillText("0", p.l, h - 8);
   ctx.fillText(String(series.points.at(-1).day), w - p.r - 18, h - 8);
 }
+
 function run() {
   const result = calculateProjection(readInputs()),
     f = result.final;
@@ -190,6 +194,7 @@ function run() {
     "",
   );
 }
+
 $("calculate").onclick = run;
 window.addEventListener("resize", run);
 applyLanguage();
@@ -249,6 +254,7 @@ function drawEnergyDual(points) {
   ctx.fillText(String(points.at(-1).day), w - p.r - 18, h - 8);
 }
 const originalRun = run;
+
 run = () => {
   originalRun();
   drawEnergyDual(calculateProjection(readInputs()).points);
@@ -268,6 +274,7 @@ if (document.getElementById("intake-view")) {
     total = document.getElementById("intake-total");
   let dailyKcal = 0,
     searchTimer;
+
   function showResults(items) {
     if (!items.length) {
       results.textContent = "No se encontraron alimentos.";
@@ -291,6 +298,7 @@ if (document.getElementById("intake-view")) {
         }),
     );
   }
+
   search.oninput = () => {
     clearTimeout(searchTimer);
     const query = search.value.trim();

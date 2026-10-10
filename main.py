@@ -252,7 +252,7 @@ _initialize_users_database()
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> Any:
     user = _session_user(request)
-    template = "human3.html" if user else "auth.html"
+    template = "dashboard.html" if user else "auth.html"
     return templates.TemplateResponse(request=request, name=template, context={"now": datetime.now().strftime("%d.%m.%Y %H:%M"), "user": user})
 
 @app.get("/health")
@@ -509,13 +509,6 @@ SPANISH_ACTIVITY_TERMS = {
 def _catalogue_path() -> Path | None:
     path = BASE_DIR / "data" / "nutrition.sqlite"
     return path if path.is_file() else None
-
-    """ candidates = (
-        PROJECT_DIR / "data" / "nutrition.sqlite",
-        BASE_DIR / "data" / "nutrition.sqlite",
-    )
-    return next((path for path in candidates if path.is_file()), None) """
-
 
 def _catalogue_connection() -> sqlite3.Connection:
     path = _catalogue_path()
