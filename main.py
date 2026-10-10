@@ -13,6 +13,9 @@ import os
 from fastapi.responses import RedirectResponse
 from dotenv import load_dotenv
 
+# for logging, monitoring
+import logging
+
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
@@ -25,6 +28,13 @@ PROJECT_DIR = BASE_DIR.parent
 
 NUTRITION_DB = BASE_DIR / "data" / "nutrition.sqlite"
 USERS_DB = PROJECT_DIR / "data" / "users.sqlite"
+
+logger = logging.getLogger(__name__)
+
+logger.info("BASE_DIR: %s", BASE_DIR)
+logger.info("PROJECT_DIR: %s", PROJECT_DIR)
+logger.info("Nutrition DB exists: %s", NUTRITION_DB.is_file())
+logger.info("Users DB exists: %s", USERS_DB.is_file())
 
 SESSION_COOKIE = "pesate_session"
 SESSION_DAYS = 14
