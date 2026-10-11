@@ -96,6 +96,7 @@
       }
     </style>
   </head>
+
   <body>
     <header class="topbar">
       <div class="brand">
@@ -316,26 +317,25 @@
       </section>
     </main>
 
-    <!-- Scripts
     <script src="{{ url_for('static', path='human-model.js') }}"></script>
     <script src="{{ url_for('static', path='human-app.js') }}"></script>
-    -->
-    <script src="static/human-model.js"></script>
-    <script src="static/human-app.js"></script>
 
     <script>
       const modelTab = document.getElementById("model-tab"),
         intakeTab = document.getElementById("intake-tab"),
         modelView = document.getElementById("model-view"),
         intakeView = document.getElementById("intake-view");
+
       function showView(showIntake) {
         modelTab.classList.toggle("active", !showIntake);
         intakeTab.classList.toggle("active", showIntake);
         modelView.classList.toggle("hidden", showIntake);
         intakeView.classList.toggle("hidden", !showIntake);
       }
+
       modelTab.onclick = () => showView(false);
       intakeTab.onclick = () => showView(true);
+
       document.getElementById("food-photo").onchange = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -349,6 +349,7 @@
         manualTotal = document.getElementById("manual-total");
       let selectedKcal = 0,
         searchTimer;
+
       function renderCatalogue(items) {
         if (!items.length) {
           manualResults.innerHTML =
@@ -372,6 +373,7 @@
             }),
         );
       }
+
       manualSearch.oninput = () => {
         clearTimeout(searchTimer);
         const query = manualSearch.value.trim();
@@ -395,6 +397,7 @@
         }, 250);
       };
     </script>
+    <!--
     <script src="{{ url_for('static', path='numberfix.js') }}"></script>
     <script src="{{ url_for('static', path='catalogue-browser.js') }}"></script>
     <script src="{{ url_for('static', path='physical-activity.js') }}"></script>
@@ -402,5 +405,13 @@
     <script src="{{ url_for('static', path='model-history-overlay.js') }}"></script>
     <script src="{{ url_for('static', path='measured-weight-overlay.js') }}"></script>
     <script src="{{ url_for('static', path='server-sync.js') }}"></script>
+    -->
+    <script src="static/numberfix.js"></script>
+    <script src="static/catalogue-browser.js"></script>
+    <script src="static/physical-activity.js"></script>
+    <script src="static/tracking.js"></script>
+    <script src="static/model-history-overlay.js"></script>
+    <script src="static/measured-weight-overlay.js"></script>
+    <script src="static/server-sync.js"></script>
   </body>
 </html>
