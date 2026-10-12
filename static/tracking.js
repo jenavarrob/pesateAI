@@ -195,14 +195,22 @@
   };
 
   function setupCanvas(canvas) {
-    const width = Math.max(canvas.clientWidth, 320),
-      height = canvas.height,
-      dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+    const width = Math.max(canvas.clientWidth, 320);
+    //height = canvas.height,
+    height = canvas.clientHeight || 210;
+    dpr = window.devicePixelRatio || 1;
+
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+
     const context = canvas.getContext("2d");
-    context.scale(dpr, dpr);
+
+    //context.scale(dpr, dpr);
+    //context.clearRect(0, 0, width, height);
+    // Reset the transform instead of accumulating scaling.
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
     context.clearRect(0, 0, width, height);
+
     return { context, width, height };
   }
 
