@@ -199,6 +199,7 @@ $("calculate").onclick = run;
 window.addEventListener("resize", run);
 applyLanguage();
 run();
+
 function drawEnergyDual(points) {
   const canvas = $("energy-chart"),
     ctx = canvas.getContext("2d"),
@@ -253,13 +254,15 @@ function drawEnergyDual(points) {
   ctx.fillText("0", p.l, h - 8);
   ctx.fillText(String(points.at(-1).day), w - p.r - 18, h - 8);
 }
-const originalRun = run;
+
+/* const originalRun = run;
 
 run = () => {
   originalRun();
   drawEnergyDual(calculateProjection(readInputs()).points);
 };
-run();
+run(); */
+
 if (document.getElementById("intake-view")) {
   const intakeView = document.getElementById("intake-view"),
     uploadCard = intakeView.querySelector(".upload-card"),
