@@ -121,6 +121,20 @@ function readInputs() {
 }
 
 function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
+  const w = canvas.clientWidth;
+  const h = 210;
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  /*
   const ctx = canvas.getContext("2d"),
     w = canvas.clientWidth,
     h = canvas.height,
@@ -128,9 +142,12 @@ function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
   canvas.width = w * dpr;
   canvas.height = h * dpr;
   ctx.scale(dpr, dpr);
+    */
+
   const p = { l: 44, r: 44, t: 16, b: 30 },
     cw = w - p.l - p.r,
     ch = h - p.t - p.b;
+
   ctx.font = "11px system-ui";
   ctx.strokeStyle = "#e6ebef";
   ctx.fillStyle = "#778594";
