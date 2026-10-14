@@ -195,6 +195,22 @@
   };
 
   function setupCanvas(canvas) {
+    const width = Math.max(canvas.clientWidth, 320),
+      height = Number(
+        canvas.dataset.logicalHeight || canvas.getAttribute("height") || 230,
+      ),
+      dpr = window.devicePixelRatio || 1;
+    canvas.dataset.logicalHeight = String(height);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    const context = canvas.getContext("2d");
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.clearRect(0, 0, width, height);
+    return { context, width, height };
+  }
+
+  /* //replacing this by fix from codex
+  function setupCanvas(canvas) {
     const width = Math.max(canvas.clientWidth, 320);
     //height = canvas.height,
     height = canvas.clientHeight || 210;
@@ -213,6 +229,7 @@
 
     return { context, width, height };
   }
+  */
 
   function drawTimeChart(canvas, points, color, label) {
     const { context: ctx, width, height } = setupCanvas(canvas),

@@ -120,6 +120,65 @@ function readInputs() {
   };
 }
 
+function canvasSize(canvas, fallbackHeight = 210) {
+  const width = Math.max(canvas.clientWidth, 320),
+    height = Number(
+      canvas.dataset.logicalHeight ||
+        canvas.getAttribute("height") ||
+        fallbackHeight,
+    ),
+    dpr = window.devicePixelRatio || 1;
+  canvas.dataset.logicalHeight = String(height);
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  const context = canvas.getContext("2d");
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+  context.clearRect(0, 0, width, height);
+  return { context, width, height };
+}
+
+function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
+  const { context: ctx, width: w, height: h } = canvasSize(canvas),
+    p = { l: 44, r: 44, t: 16, b: 30 },
+    cw = w - p.l - p.r,
+    ch = h - p.t - p.b;
+  ctx.font = "11px system-ui";
+  ctx.strokeStyle = "#e6ebef";
+  ctx.fillStyle = "#778594";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const y = p.t + (ch * i) / 4;
+    ctx.beginPath();
+    ctx.moveTo(p.l, y);
+    ctx.lineTo(w - p.r, y);
+    ctx.stroke();
+    ctx.fillText(
+      Math.round(series.min + (series.max - series.min) * (1 - i / 4)),
+      5,
+      y + 4,
+    );
+  }
+  ctx.fillText(leftLabel, 5, 11);
+  ctx.fillText(rightLabel, w - p.r - 25, 11);
+  keys.forEach((key, idx) => {
+    ctx.strokeStyle = colors[idx];
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    series.points.forEach((v, i) => {
+      const x = p.l + (cw * i) / (series.points.length - 1),
+        y =
+          p.t +
+          ch * (1 - (v[key] - series.min) / (series.max - series.min || 1));
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.stroke();
+  });
+  ctx.fillStyle = "#778594";
+  ctx.fillText("0", p.l, h - 8);
+  ctx.fillText(String(series.points.at(-1).day), w - p.r - 18, h - 8);
+}
+
+/* //replacing this by fix from codex
 function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
   const w = canvas.clientWidth;
   const h = 210;
@@ -134,15 +193,15 @@ function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, w, h);
 
-  /*
-  const ctx = canvas.getContext("2d"),
-    w = canvas.clientWidth,
-    h = canvas.height,
-    dpr = window.devicePixelRatio || 1;
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
-  ctx.scale(dpr, dpr);
-    */
+  // old change, before commentin the whole function and replace for one fixed by codex
+  //const ctx = canvas.getContext("2d"),
+  //  w = canvas.clientWidth,
+  //  h = canvas.height,
+  //  dpr = window.devicePixelRatio || 1;
+  //canvas.width = w * dpr;
+  //canvas.height = h * dpr;
+  //ctx.scale(dpr, dpr);
+  
 
   const p = { l: 44, r: 44, t: 16, b: 30 },
     cw = w - p.l - p.r,
@@ -183,6 +242,7 @@ function drawChart(canvas, series, keys, colors, leftLabel, rightLabel) {
   ctx.fillText("0", p.l, h - 8);
   ctx.fillText(String(series.points.at(-1).day), w - p.r - 18, h - 8);
 }
+*/
 
 function run() {
   const result = calculateProjection(readInputs()),
