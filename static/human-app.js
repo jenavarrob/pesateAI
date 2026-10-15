@@ -279,6 +279,56 @@ run();
 
 function drawEnergyDual(points) {
   const canvas = $("energy-chart"),
+    { context: ctx, width: w, height: h } = canvasSize(canvas),
+    p = { l: 44, r: 44, t: 16, b: 30 },
+    cw = w - p.l - p.r,
+    ch = h - p.t - p.b,
+    ints = points.map((x) => x.intake),
+    pals = points.map((x) => x.pal),
+    minI = Math.min(...ints),
+    maxI = Math.max(...ints),
+    minP = Math.min(...pals),
+    maxP = Math.max(...pals);
+  ctx.font = "11px system-ui";
+  ctx.strokeStyle = "#e6ebef";
+  ctx.fillStyle = "#778594";
+  for (let i = 0; i < 5; i++) {
+    const y = p.t + (ch * i) / 4;
+    ctx.beginPath();
+    ctx.moveTo(p.l, y);
+    ctx.lineTo(w - p.r, y);
+    ctx.stroke();
+    ctx.fillText(Math.round(maxI - ((maxI - minI) * i) / 4), 5, y + 4);
+    ctx.fillText(
+      (maxP - ((maxP - minP) * i) / 4).toFixed(2),
+      w - p.r + 5,
+      y + 4,
+    );
+  }
+  ctx.fillText(lang === "es" ? "kcal/día" : "kcal/day", 5, 11);
+  ctx.fillText("PAL", w - p.r - 10, 11);
+  [
+    ["intake", "#2776db", minI, maxI],
+    ["pal", "#f39a42", minP, maxP],
+  ].forEach(([key, color, min, max]) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    points.forEach((v, i) => {
+      const x = p.l + (cw * i) / (points.length - 1),
+        y = p.t + ch * (1 - (v[key] - min) / (max - min || 1));
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.stroke();
+  });
+  ctx.fillStyle = "#778594";
+  ctx.fillText("0", p.l, h - 8);
+  ctx.fillText(String(points.at(-1).day), w - p.r - 18, h - 8);
+}
+
+/*
+function drawEnergyDual(points) {
+  const canvas = $("energy-chart"),
     ctx = canvas.getContext("2d"),
     w = canvas.clientWidth,
     h = canvas.height,
@@ -331,6 +381,8 @@ function drawEnergyDual(points) {
   ctx.fillText("0", p.l, h - 8);
   ctx.fillText(String(points.at(-1).day), w - p.r - 18, h - 8);
 }
+  
+*/
 
 /* const originalRun = run;
 

@@ -27,7 +27,7 @@ Open http://127.0.0.1:8000.
 - `main.py`: FastAPI shell and static/template serving.
 - `static/human-app.js`: input handling, localization, chart rendering, and browser interaction.
 - `static/human-model.js`: pure projection calculation, kept separate from DOM handling.
-- `templates/human.html` and `static/human.css`: responsive web UI.
+- `templates/dashboard.html` and `static/human.css`: responsive web UI.
 
 ## User data
 
